@@ -26,7 +26,7 @@
         <!-- Статистика основного перевода -->
         <section class="border border-gray-200 rounded-lg p-4 bg-white">
             <h2 class="text-sm font-semibold text-gray-800 mb-3">Основной перевод (translation_ru.tsv)</h2>
-            <div id="mainStats" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div id="mainStats" class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div class="text-center p-3 bg-gray-50 rounded">
                     <div class="text-2xl font-bold text-gray-900" id="mainTotal">-</div>
                     <div class="text-xs text-gray-600 mt-1">Всего строк</div>
@@ -41,17 +41,13 @@
                     <div class="text-xs text-yellow-600 mt-1">Английский (EN)</div>
                     <div class="text-xs text-yellow-500 mt-1" id="mainENPercent">-</div>
                 </div>
-                <div class="text-center p-3 bg-gray-50 rounded">
-                    <div class="text-2xl font-bold text-gray-900" id="mainEmpty">-</div>
-                    <div class="text-xs text-gray-600 mt-1">Пустые</div>
-                </div>
             </div>
         </section>
 
         <!-- Статистика машинного перевода -->
         <section class="border border-gray-200 rounded-lg p-4 bg-white">
             <h2 class="text-sm font-semibold text-gray-800 mb-3">Предворительный перевод</h2>
-            <div id="cnStats" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div id="cnStats" class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div class="text-center p-3 bg-gray-50 rounded">
                     <div class="text-2xl font-bold text-gray-900" id="cnTotal">-</div>
                     <div class="text-xs text-gray-600 mt-1">Всего строк</div>
@@ -66,16 +62,12 @@
                     <div class="text-xs text-yellow-600 mt-1">Английский (EN)</div>
                     <div class="text-xs text-yellow-500 mt-1" id="cnENPercent">-</div>
                 </div>
-                <div class="text-center p-3 bg-gray-50 rounded">
-                    <div class="text-2xl font-bold text-gray-900" id="cnEmpty">-</div>
-                    <div class="text-xs text-gray-600 mt-1">Пустые</div>
-                </div>
             </div>
         </section>
 
         <!-- Дополнительная статистика по машинному RU -->
         <section class="border border-gray-200 rounded-lg p-4 bg-white">
-            <h2 class="text-sm font-semibold text-gray-800 mb-3">Машинный перевод в русском относительно основного</h2>
+            <h2 class="text-sm font-semibold text-gray-800 mb-3">Общая статистика</h2>
             <p class="text-xs text-gray-600 mb-3">
                 Сравнение количества строк на русском языке в основном переводе и машинном переводе.
             </p>
@@ -86,7 +78,7 @@
                 </div>
                 <div class="text-center p-3 bg-blue-50 rounded">
                     <div class="text-2xl font-bold text-blue-700" id="uniqueRU">-</div>
-                    <div class="text-xs text-blue-600 mt-1">Машинный RU (всего)</div>
+                    <div class="text-xs text-blue-600 mt-1">С Машинным переводом (всего)</div>
                     <div class="text-xs text-blue-500 mt-1" id="uniqueRUPercent">-</div>
                 </div>
                 <div class="text-center p-3 bg-yellow-50 rounded">
@@ -125,7 +117,7 @@
                 </div>
                 <div>
                     <div class="flex justify-between text-xs text-gray-600 mb-1">
-                        <span>Уникальные строки - Русский</span>
+                        <span>Машинный RU сверх основного</span>
                         <span id="uniqueRUPercentBar">-</span>
                     </div>
                     <div class="w-full bg-gray-200 rounded-full h-3">
@@ -203,12 +195,19 @@
 
     // Функция для обновления статистики на странице
     function updateStats(elementPrefix, stats) {
-        document.getElementById(`${elementPrefix}Total`).textContent = stats.total.toLocaleString();
-        document.getElementById(`${elementPrefix}RU`).textContent = stats.ru.toLocaleString();
-        document.getElementById(`${elementPrefix}EN`).textContent = stats.en.toLocaleString();
-        document.getElementById(`${elementPrefix}Empty`).textContent = stats.empty.toLocaleString();
-        document.getElementById(`${elementPrefix}RUPercent`).textContent = `${stats.ruPercent}%`;
-        document.getElementById(`${elementPrefix}ENPercent`).textContent = `${stats.enPercent}%`;
+        const totalEl = document.getElementById(`${elementPrefix}Total`);
+        const ruEl = document.getElementById(`${elementPrefix}RU`);
+        const enEl = document.getElementById(`${elementPrefix}EN`);
+        const emptyEl = document.getElementById(`${elementPrefix}Empty`);
+        const ruPercentEl = document.getElementById(`${elementPrefix}RUPercent`);
+        const enPercentEl = document.getElementById(`${elementPrefix}ENPercent`);
+
+        if (totalEl) totalEl.textContent = stats.total.toLocaleString();
+        if (ruEl) ruEl.textContent = stats.ru.toLocaleString();
+        if (enEl) enEl.textContent = stats.en.toLocaleString();
+        if (emptyEl) emptyEl.textContent = stats.empty.toLocaleString();
+        if (ruPercentEl) ruPercentEl.textContent = `${stats.ruPercent}%`;
+        if (enPercentEl) enPercentEl.textContent = `${stats.enPercent}%`;
         
         // Обновляем прогресс-бары
         if (elementPrefix === 'main') {
@@ -267,19 +266,21 @@
             const ruShareInCn = cnStats.total > 0 ? ((cnStats.ru / cnStats.total) * 100).toFixed(1) : 0;
             // Насколько машинный RU больше основного RU (ожидаемо большие проценты)
             const ruRatio = mainStats.ru > 0 ? ((cnStats.ru / mainStats.ru) * 100).toFixed(1) : 0;
+            // Какая доля машинного RU ещё не попала в основной перевод
+            const extraRuShareInCn = cnStats.ru > 0 ? ((extraRu / cnStats.ru) * 100).toFixed(1) : 0;
 
             document.getElementById('uniqueTotal').textContent = extraRu.toLocaleString();
             document.getElementById('uniqueRU').textContent = cnStats.ru.toLocaleString();
             document.getElementById('uniqueRUPercent').textContent = `${ruShareInCn}%`;
             document.getElementById('uniqueEN').textContent = mainStats.ru.toLocaleString();
             document.getElementById('uniqueENPercent').textContent = `${ruRatio}%`;
-            document.getElementById('uniqueEmpty').textContent = `${ruRatio}%`;
+            document.getElementById('uniqueEmpty').textContent = `${extraRuShareInCn}%`;
 
-            // Прогресс-бар для блока уникальных — показываем долю RU в машинном переводе
-            document.getElementById('uniqueRUProgress').style.width = `${ruShareInCn}%`;
-            document.getElementById('uniqueRUPercentBar').textContent = `${ruShareInCn}%`;
+            // Прогресс-бар — показываем долю машинного RU, которая ещё не покрыта основным переводом
+            document.getElementById('uniqueRUProgress').style.width = `${extraRuShareInCn}%`;
+            document.getElementById('uniqueRUPercentBar').textContent = `${extraRuShareInCn}%`;
 
-            loadingInfo.textContent = `✅ Данные загружены. Основной: ${mainStats.total.toLocaleString()} строк, Машинный: ${cnStats.total.toLocaleString()} строк, Уникальных: ${uniqueStats.total.toLocaleString()} строк`;
+            loadingInfo.textContent = `✅ Данные загружены. Основной: ${mainStats.total.toLocaleString()} строк, Машинный: ${cnStats.total.toLocaleString()} строк, Машинный RU сверх основного: ${extraRu.toLocaleString()} строк`;
         } catch (e) {
             console.error(e);
             loadingInfo.textContent = `❌ Ошибка: ${e.message}`;
