@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>WWM – сравнение таблиц перевода</title>
+    <title>WWM – статистика переводов</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
@@ -11,154 +11,153 @@
     <header class="border-b border-gray-200 bg-gray-50">
         <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
             <div>
-                <h1 class="text-xl font-semibold text-gray-900">Where Winds Meet – сравнение переводов</h1>
+                <h1 class="text-xl font-semibold text-gray-900">Where Winds Meet – статистика переводов</h1>
                 <p class="text-xs text-gray-500 mt-1">
-                    Открой два файла <span class="font-mono">TSV</span> с колонками <span class="font-mono">ID</span> и <span class="font-mono">OriginalText</span>, чтобы сравнить тексты.
+                    Статистика по файлам <span class="font-mono">translation_ru.tsv</span> и <span class="font-mono">_cn_translate/translation_ru.tsv</span>
                 </p>
             </div>
+            <button id="btnRefresh" class="inline-flex items-center rounded border border-gray-800 bg-gray-800 px-3 py-1.5 text-xs font-medium text-gray-50 hover:bg-gray-700">
+                🔄 Обновить
+            </button>
         </div>
     </header>
 
     <main class="flex-1 max-w-6xl mx-auto w-full px-4 py-4 space-y-4">
-        <!-- Блок выбора файлов -->
-        <section class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="border border-gray-200 rounded-lg p-3 bg-gray-50">
-                <h2 class="text-sm font-semibold text-gray-800 mb-2">Левая таблица</h2>
-                <label class="block text-xs font-medium text-gray-700 mb-1">Файл TSV</label>
-                <input id="leftFile" type="file" accept=".tsv,text/tab-separated-values"
-                       class="block w-full text-xs text-gray-700 file:mr-2 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-medium file:bg-gray-800 file:text-gray-100 hover:file:bg-gray-700 cursor-pointer">
-                <p id="leftInfo" class="mt-1 text-xs text-gray-500">Файл не выбран</p>
-            </div>
-
-            <div class="border border-gray-200 rounded-lg p-3 bg-gray-50">
-                <h2 class="text-sm font-semibold text-gray-800 mb-2">Правая таблица</h2>
-                <label class="block text-xs font-medium text-gray-700 mb-1">Файл TSV</label>
-                <input id="rightFile" type="file" accept=".tsv,text/tab-separated-values"
-                       class="block w-full text-xs text-gray-700 file:mr-2 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-medium file:bg-gray-800 file:text-gray-100 hover:file:bg-gray-700 cursor-pointer">
-                <p id="rightInfo" class="mt-1 text-xs text-gray-500">Файл не выбран</p>
-            </div>
-        </section>
-
-        <!-- Фильтры и статистика -->
-        <section class="border border-gray-200 rounded-lg p-3 bg-gray-50 space-y-3">
-            <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-3">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 w-full">
-                    <div>
-                        <label class="block text-xs font-medium text-gray-700 mb-1" for="filterId">Фильтр по ID</label>
-                        <input id="filterId" type="text"
-                               class="w-full rounded border-gray-300 bg-white text-xs px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-gray-700 focus:border-gray-700"
-                               placeholder="Содержит...">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-gray-700 mb-1" for="filterLeft">Фильтр по тексту (левая)</label>
-                        <input id="filterLeft" type="text"
-                               class="w-full rounded border-gray-300 bg-white text-xs px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-gray-700 focus:border-gray-700"
-                               placeholder="Часть текста...">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-gray-700 mb-1" for="filterRight">Фильтр по тексту (правая)</label>
-                        <input id="filterRight" type="text"
-                               class="w-full rounded border-gray-300 bg-white text-xs px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-gray-700 focus:border-gray-700"
-                               placeholder="Часть текста...">
-                    </div>
+        <!-- Статистика основного перевода -->
+        <section class="border border-gray-200 rounded-lg p-4 bg-white">
+            <h2 class="text-sm font-semibold text-gray-800 mb-3">Основной перевод (translation_ru.tsv)</h2>
+            <div id="mainStats" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="text-center p-3 bg-gray-50 rounded">
+                    <div class="text-2xl font-bold text-gray-900" id="mainTotal">-</div>
+                    <div class="text-xs text-gray-600 mt-1">Всего строк</div>
                 </div>
-                <div class="flex items-center gap-2">
-                    <button id="btnApplyFilters"
-                            class="inline-flex items-center rounded border border-gray-800 bg-gray-800 px-3 py-1.5 text-xs font-medium text-gray-50 hover:bg-gray-700">
-                        Применить фильтры
-                    </button>
-                    <button id="btnResetFilters"
-                            class="inline-flex items-center rounded border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-100">
-                        Сбросить
-                    </button>
+                <div class="text-center p-3 bg-blue-50 rounded">
+                    <div class="text-2xl font-bold text-blue-700" id="mainRU">-</div>
+                    <div class="text-xs text-blue-600 mt-1">Русский (RU)</div>
+                    <div class="text-xs text-blue-500 mt-1" id="mainRUPercent">-</div>
                 </div>
-            </div>
-
-            <div class="flex flex-wrap items-center justify-between gap-2 text-xs text-gray-600 border-t border-gray-200 pt-2">
-                <div id="statsSummary">Загружено: 0 ID</div>
-                <div class="flex gap-3">
-                    <span id="statsSame" class="inline-flex items-center gap-1">
-                        <span class="inline-block h-2 w-2 rounded-full bg-gray-400"></span> Совпадает: 0
-                    </span>
-                    <span id="statsDiff" class="inline-flex items-center gap-1">
-                        <span class="inline-block h-2 w-2 rounded-full bg-yellow-500"></span> Различается: 0
-                    </span>
-                    <span id="statsLeftOnly" class="inline-flex items-center gap-1">
-                        <span class="inline-block h-2 w-2 rounded-full bg-blue-500"></span> Только слева: 0
-                    </span>
-                    <span id="statsRightOnly" class="inline-flex items-center gap-1">
-                        <span class="inline-block h-2 w-2 rounded-full bg-red-500"></span> Только справа: 0
-                    </span>
+                <div class="text-center p-3 bg-yellow-50 rounded">
+                    <div class="text-2xl font-bold text-yellow-700" id="mainEN">-</div>
+                    <div class="text-xs text-yellow-600 mt-1">Английский (EN)</div>
+                    <div class="text-xs text-yellow-500 mt-1" id="mainENPercent">-</div>
+                </div>
+                <div class="text-center p-3 bg-gray-50 rounded">
+                    <div class="text-2xl font-bold text-gray-900" id="mainEmpty">-</div>
+                    <div class="text-xs text-gray-600 mt-1">Пустые</div>
                 </div>
             </div>
         </section>
 
-        <!-- Таблица -->
-        <section class="border border-gray-200 rounded-lg overflow-hidden bg-white flex flex-col min-h-[300px]">
-            <div class="border-b border-gray-200 px-3 py-2 flex items-center justify-between text-xs text-gray-600">
-                <span id="tableInfo">Строк: 0 (показано 0)</span>
-                <div class="flex items-center gap-2">
-                    <label class="flex items-center gap-1">
-                        <span>На страницу:</span>
-                        <select id="pageSize"
-                                class="rounded border-gray-300 bg-white text-xs px-1 py-0.5 focus:outline-none focus:ring-1 focus:ring-gray-700 focus:border-gray-700">
-                            <option value="50">50</option>
-                            <option value="100" selected>100</option>
-                            <option value="200">200</option>
-                            <option value="500">500</option>
-                        </select>
-                    </label>
+        <!-- Статистика машинного перевода -->
+        <section class="border border-gray-200 rounded-lg p-4 bg-white">
+            <h2 class="text-sm font-semibold text-gray-800 mb-3">Машинный перевод (_cn_translate/translation_ru.tsv)</h2>
+            <div id="cnStats" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="text-center p-3 bg-gray-50 rounded">
+                    <div class="text-2xl font-bold text-gray-900" id="cnTotal">-</div>
+                    <div class="text-xs text-gray-600 mt-1">Всего строк</div>
                 </div>
-            </div>
-            <div class="overflow-auto">
-                <table class="min-w-full text-xs text-left text-gray-800">
-                    <thead class="bg-gray-100 border-b border-gray-200">
-                    <tr>
-                        <th class="px-2 py-1.5 font-semibold w-32 border-r border-gray-200">ID</th>
-                        <th class="px-2 py-1.5 font-semibold border-r border-gray-200">Текст (левая)</th>
-                        <th class="px-2 py-1.5 font-semibold border-r border-gray-200">Текст (правая)</th>
-                        <th class="px-2 py-1.5 font-semibold w-28">Статус</th>
-                    </tr>
-                    </thead>
-                    <tbody id="tableBody" class="divide-y divide-gray-100">
-                    
-                    </tbody>
-                </table>
-            </div>
-            <div class="border-t border-gray-200 px-3 py-2 flex items-center justify-between text-xs text-gray-700">
-                <button id="btnPrevPage"
-                        class="rounded border border-gray-300 bg-white px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-default">
-                    ← Назад
-                </button>
-                <div id="pageInfo" class="text-xs text-gray-600">Стр. 0 / 0</div>
-                <button id="btnNextPage"
-                        class="rounded border border-gray-300 bg-white px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-40 disabled:cursor-default">
-                    Вперёд →
-                </button>
+                <div class="text-center p-3 bg-blue-50 rounded">
+                    <div class="text-2xl font-bold text-blue-700" id="cnRU">-</div>
+                    <div class="text-xs text-blue-600 mt-1">Русский (RU)</div>
+                    <div class="text-xs text-blue-500 mt-1" id="cnRUPercent">-</div>
+                </div>
+                <div class="text-center p-3 bg-yellow-50 rounded">
+                    <div class="text-2xl font-bold text-yellow-700" id="cnEN">-</div>
+                    <div class="text-xs text-yellow-600 mt-1">Английский (EN)</div>
+                    <div class="text-xs text-yellow-500 mt-1" id="cnENPercent">-</div>
+                </div>
+                <div class="text-center p-3 bg-gray-50 rounded">
+                    <div class="text-2xl font-bold text-gray-900" id="cnEmpty">-</div>
+                    <div class="text-xs text-gray-600 mt-1">Пустые</div>
+                </div>
             </div>
         </section>
 
-        <section class="text-[11px] text-gray-500">
-            <p>Формат файлов: первая строка — заголовок с колонками <span class="font-mono">ID</span> и <span class="font-mono">OriginalText</span>. Поддерживаются только файлы <span class="font-mono">.tsv</span> с разделителем «табуляция».</p>
+        <!-- Уникальные строки -->
+        <section class="border border-gray-200 rounded-lg p-4 bg-white">
+            <h2 class="text-sm font-semibold text-gray-800 mb-3">Уникальные строки в машинном переводе</h2>
+            <p class="text-xs text-gray-600 mb-3">Строки, которые есть в машинном переводе, но отсутствуют в основном</p>
+            <div id="uniqueStats" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="text-center p-3 bg-green-50 rounded">
+                    <div class="text-2xl font-bold text-green-700" id="uniqueTotal">-</div>
+                    <div class="text-xs text-green-600 mt-1">Всего уникальных</div>
+                </div>
+                <div class="text-center p-3 bg-blue-50 rounded">
+                    <div class="text-2xl font-bold text-blue-700" id="uniqueRU">-</div>
+                    <div class="text-xs text-blue-600 mt-1">Русский (RU)</div>
+                    <div class="text-xs text-blue-500 mt-1" id="uniqueRUPercent">-</div>
+                </div>
+                <div class="text-center p-3 bg-yellow-50 rounded">
+                    <div class="text-2xl font-bold text-yellow-700" id="uniqueEN">-</div>
+                    <div class="text-xs text-yellow-600 mt-1">Английский (EN)</div>
+                    <div class="text-xs text-yellow-500 mt-1" id="uniqueENPercent">-</div>
+                </div>
+                <div class="text-center p-3 bg-gray-50 rounded">
+                    <div class="text-2xl font-bold text-gray-900" id="uniqueEmpty">-</div>
+                    <div class="text-xs text-gray-600 mt-1">Пустые</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Прогресс-бары -->
+        <section class="border border-gray-200 rounded-lg p-4 bg-white">
+            <h2 class="text-sm font-semibold text-gray-800 mb-3">Визуализация прогресса</h2>
+            <div class="space-y-4">
+                <div>
+                    <div class="flex justify-between text-xs text-gray-600 mb-1">
+                        <span>Основной перевод - Русский</span>
+                        <span id="mainRUPercentBar">-</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-3">
+                        <div id="mainRUProgress" class="bg-blue-600 h-3 rounded-full transition-all" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex justify-between text-xs text-gray-600 mb-1">
+                        <span>Машинный перевод - Русский</span>
+                        <span id="cnRUPercentBar">-</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-3">
+                        <div id="cnRUProgress" class="bg-blue-600 h-3 rounded-full transition-all" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex justify-between text-xs text-gray-600 mb-1">
+                        <span>Уникальные строки - Русский</span>
+                        <span id="uniqueRUPercentBar">-</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-3">
+                        <div id="uniqueRUProgress" class="bg-green-600 h-3 rounded-full transition-all" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Информация о загрузке -->
+        <section class="border border-gray-200 rounded-lg p-3 bg-gray-50">
+            <div id="loadingInfo" class="text-xs text-gray-600">Загрузка данных...</div>
         </section>
     </main>
 </div>
 
 <script>
-    // TSV only
-    function detectDelimiter(filename) {
-        return '\t';
+    // Функция для определения, является ли текст русским
+    function isRussian(text) {
+        if (!text || text.trim().length === 0) return false;
+        // Проверяем наличие русских букв
+        const russianPattern = /[А-Яа-яЁё]/;
+        // Проверяем, состоит ли строка только из цифр
+        const onlyDigits = /^\d+$/.test(text.trim());
+        return russianPattern.test(text) || onlyDigits;
     }
 
-    function parseTableText(name, text) {
-        const delimiter = detectDelimiter(name);
-        // Разбиваем именно по реальным переводам строк, а не по символам "\r" "\n"
+    // Функция для парсинга TSV файла
+    // Всегда возвращает массив строк формата { id, text }
+    function parseTSV(text) {
         const lines = text.split(/\r?\n/).filter(l => l.length > 0);
-        if (lines.length === 0) {
-            return { rows: [], header: [], delimiter };
-        }
+        if (lines.length === 0) return [];
 
-        const header = lines[0].split(delimiter);
+        const header = lines[0].split('\t');
         const idIndex = header.indexOf('ID');
         const textIndex = header.indexOf('OriginalText');
         const idCol = idIndex >= 0 ? idIndex : 0;
@@ -166,271 +165,120 @@
 
         const rows = [];
         for (let i = 1; i < lines.length; i++) {
-            const parts = lines[i].split(delimiter);
+            const parts = lines[i].split('\t');
             if (parts.length <= Math.max(idCol, txtCol)) continue;
             const id = (parts[idCol] || '').trim();
             if (!id) continue;
             const txt = parts[txtCol] || '';
             rows.push({ id, text: txt });
         }
-
-        return { rows, header, delimiter };
+        return rows;
     }
 
-    function parseTableFile(file) {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onerror = () => reject(new Error('Ошибка чтения файла'));
-            reader.onload = () => {
-                const text = reader.result || '';
-                resolve(parseTableText(file.name, text));
-            };
-            reader.readAsText(file, 'utf-8');
-        });
-    }
+    // Функция для подсчета статистики
+    function calculateStats(rows) {
+        let total = rows.length;
+        let ru = 0;
+        let en = 0;
+        let empty = 0;
 
-    const state = {
-        left: new Map(),
-        right: new Map(),
-        merged: [],
-        filtered: [],
-        page: 1,
-        pageSize: 100
-    };
-
-    const dom = {
-        leftFile: document.getElementById('leftFile'),
-        rightFile: document.getElementById('rightFile'),
-        leftInfo: document.getElementById('leftInfo'),
-        rightInfo: document.getElementById('rightInfo'),
-        filterId: document.getElementById('filterId'),
-        filterLeft: document.getElementById('filterLeft'),
-        filterRight: document.getElementById('filterRight'),
-        btnApplyFilters: document.getElementById('btnApplyFilters'),
-        btnResetFilters: document.getElementById('btnResetFilters'),
-        statsSummary: document.getElementById('statsSummary'),
-        statsSame: document.getElementById('statsSame'),
-        statsDiff: document.getElementById('statsDiff'),
-        statsLeftOnly: document.getElementById('statsLeftOnly'),
-        statsRightOnly: document.getElementById('statsRightOnly'),
-        tableBody: document.getElementById('tableBody'),
-        tableInfo: document.getElementById('tableInfo'),
-        pageSize: document.getElementById('pageSize'),
-        pageInfo: document.getElementById('pageInfo'),
-        btnPrevPage: document.getElementById('btnPrevPage'),
-        btnNextPage: document.getElementById('btnNextPage')
-    };
-
-    function mergeData() {
-        const allIds = new Set([...state.left.keys(), ...state.right.keys()]);
-        const merged = [];
-        let same = 0, diff = 0, leftOnly = 0, rightOnly = 0;
-
-        for (const id of allIds) {
-            const l = state.left.get(id) || '';
-            const r = state.right.get(id) || '';
-            let status;
-            if (l && r) {
-                if (l === r) {
-                    status = 'same';
-                    same++;
-                } else {
-                    status = 'diff';
-                    diff++;
-                }
-            } else if (l) {
-                status = 'left-only';
-                leftOnly++;
+        for (const row of rows) {
+            const text = row.text || '';
+            if (text.trim().length === 0) {
+                empty++;
+            } else if (isRussian(text)) {
+                ru++;
             } else {
-                status = 'right-only';
-                rightOnly++;
+                en++;
             }
-            merged.push({ id, left: l, right: r, status });
         }
 
-        merged.sort((a, b) => a.id.localeCompare(b.id));
-        state.merged = merged;
-        state.filtered = merged;
-        state.page = 1;
+        const ruPercent = total > 0 ? ((ru / total) * 100).toFixed(1) : 0;
+        const enPercent = total > 0 ? ((en / total) * 100).toFixed(1) : 0;
 
-        dom.statsSummary.textContent = `Всего уникальных ID: ${merged.length}`;
-        dom.statsSame.textContent = `Совпадает: ${same}`;
-        dom.statsDiff.textContent = `Различается: ${diff}`;
-        dom.statsLeftOnly.textContent = `Только слева: ${leftOnly}`;
-        dom.statsRightOnly.textContent = `Только справа: ${rightOnly}`;
-
-        renderTable();
+        return { total, ru, en, empty, ruPercent, enPercent };
     }
 
-    function applyFilters() {
-        const idFilter = dom.filterId.value.trim().toLowerCase();
-        const leftFilter = dom.filterLeft.value.trim().toLowerCase();
-        const rightFilter = dom.filterRight.value.trim().toLowerCase();
-
-        state.filtered = state.merged.filter(row => {
-            if (idFilter && !row.id.toLowerCase().includes(idFilter)) return false;
-            if (leftFilter && !row.left.toLowerCase().includes(leftFilter)) return false;
-            if (rightFilter && !row.right.toLowerCase().includes(rightFilter)) return false;
-            return true;
-        });
-        state.page = 1;
-        renderTable();
-    }
-
-    function renderTable() {
-        const total = state.filtered.length;
-        const pageSize = state.pageSize;
-        const maxPage = total === 0 ? 1 : Math.ceil(total / pageSize);
-        if (state.page > maxPage) state.page = maxPage;
-        if (state.page < 1) state.page = 1;
-
-        const start = (state.page - 1) * pageSize;
-        const end = Math.min(start + pageSize, total);
-        const slice = state.filtered.slice(start, end);
-
-        dom.tableBody.innerHTML = '';
-        const frag = document.createDocumentFragment();
-
-        for (const row of slice) {
-            const tr = document.createElement('tr');
-            tr.className = 'hover:bg-gray-50';
-
-            let statusLabel = '';
-            let statusClass = '';
-            if (row.status === 'same') {
-                statusLabel = 'Совпадает';
-                statusClass = 'bg-gray-200 text-gray-800';
-            } else if (row.status === 'diff') {
-                statusLabel = 'Различается';
-                statusClass = 'bg-yellow-100 text-yellow-800';
-            } else if (row.status === 'left-only') {
-                statusLabel = 'Только слева';
-                statusClass = 'bg-blue-100 text-blue-800';
-            } else if (row.status === 'right-only') {
-                statusLabel = 'Только справа';
-                statusClass = 'bg-red-100 text-red-800';
-            }
-
-            tr.innerHTML = `
-                <td class="align-top px-2 py-1.5 border-r border-gray-100 font-mono text-[11px] text-gray-900">${row.id}</td>
-                <td class="align-top px-2 py-1.5 border-r border-gray-100 text-[11px] text-gray-800 whitespace-pre-wrap break-words">${row.left}</td>
-                <td class="align-top px-2 py-1.5 border-r border-gray-100 text-[11px] text-gray-800 whitespace-pre-wrap break-words">${row.right}</td>
-                <td class="align-top px-2 py-1.5">
-                    <span class="inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium ${statusClass}">
-                        ${statusLabel}
-                    </span>
-                </td>
-            `;
-            frag.appendChild(tr);
+    // Функция для обновления статистики на странице
+    function updateStats(elementPrefix, stats) {
+        document.getElementById(`${elementPrefix}Total`).textContent = stats.total.toLocaleString();
+        document.getElementById(`${elementPrefix}RU`).textContent = stats.ru.toLocaleString();
+        document.getElementById(`${elementPrefix}EN`).textContent = stats.en.toLocaleString();
+        document.getElementById(`${elementPrefix}Empty`).textContent = stats.empty.toLocaleString();
+        document.getElementById(`${elementPrefix}RUPercent`).textContent = `${stats.ruPercent}%`;
+        document.getElementById(`${elementPrefix}ENPercent`).textContent = `${stats.enPercent}%`;
+        
+        // Обновляем прогресс-бары
+        if (elementPrefix === 'main') {
+            document.getElementById('mainRUProgress').style.width = `${stats.ruPercent}%`;
+            document.getElementById('mainRUPercentBar').textContent = `${stats.ruPercent}%`;
+        } else if (elementPrefix === 'cn') {
+            document.getElementById('cnRUProgress').style.width = `${stats.ruPercent}%`;
+            document.getElementById('cnRUPercentBar').textContent = `${stats.ruPercent}%`;
+        } else if (elementPrefix === 'unique') {
+            document.getElementById('uniqueRUProgress').style.width = `${stats.ruPercent}%`;
+            document.getElementById('uniqueRUPercentBar').textContent = `${stats.ruPercent}%`;
         }
-
-        dom.tableBody.appendChild(frag);
-
-        dom.tableInfo.textContent = `Строк после фильтрации: ${total} (показано ${slice.length})`;
-        dom.pageInfo.textContent = `Стр. ${total === 0 ? 0 : state.page} / ${total === 0 ? 0 : maxPage}`;
-
-        dom.btnPrevPage.disabled = state.page <= 1;
-        dom.btnNextPage.disabled = state.page >= maxPage;
     }
 
-    async function handleFileChange(side, input, infoEl) {
-        const file = input.files && input.files[0];
-        if (!file) {
-            infoEl.textContent = 'Файл не выбран';
-            if (side === 'left') state.left.clear();
-            else state.right.clear();
-            state.merged = [];
-            state.filtered = [];
-            renderTable();
-            return;
-        }
-        infoEl.textContent = `Загрузка: ${file.name}...`;
+    // Функция для загрузки файла
+    async function loadFile(url) {
         try {
-            const { rows } = await parseTableFile(file);
-            const map = new Map();
-            for (const r of rows) {
-                map.set(r.id, r.text);
-            }
-            if (side === 'left') {
-                state.left = map;
-            } else {
-                state.right = map;
-            }
-            infoEl.textContent = `Файл: ${file.name} (строк: ${rows.length})`;
-            mergeData();
-        } catch (e) {
-            console.error(e);
-            infoEl.textContent = 'Ошибка при разборе файла';
-        }
-    }
-
-    async function loadRepoSide(side, url, infoEl) {
-        try {
-            infoEl.textContent = `Загрузка из репозитория: ${url}...`;
             const res = await fetch(url);
             if (!res.ok) {
-                infoEl.textContent = `Не удалось загрузить ${url}`;
-                return;
+                throw new Error(`Не удалось загрузить ${url}`);
             }
             const text = await res.text();
-            const { rows } = parseTableText(url, text);
-            const map = new Map();
-            for (const r of rows) {
-                map.set(r.id, r.text);
-            }
-            if (side === 'left') {
-                state.left = map;
-            } else {
-                state.right = map;
-            }
-            infoEl.textContent = `Из репозитория: ${url} (строк: ${rows.length})`;
-            mergeData();
+            return parseTSV(text);
         } catch (e) {
             console.error(e);
-            infoEl.textContent = `Ошибка загрузки ${url}`;
+            throw e;
         }
     }
 
-    dom.leftFile.addEventListener('change', () => handleFileChange('left', dom.leftFile, dom.leftInfo));
-    dom.rightFile.addEventListener('change', () => handleFileChange('right', dom.rightFile, dom.rightInfo));
+    // Основная функция загрузки и обработки данных
+    async function loadAndProcess() {
+        const loadingInfo = document.getElementById('loadingInfo');
+        loadingInfo.textContent = 'Загрузка файлов...';
 
-    dom.btnApplyFilters.addEventListener('click', () => applyFilters());
-    dom.btnResetFilters.addEventListener('click', () => {
-        dom.filterId.value = '';
-        dom.filterLeft.value = '';
-        dom.filterRight.value = '';
-        state.filtered = state.merged;
-        state.page = 1;
-        renderTable();
-    });
+        try {
+            // Загружаем оба файла
+            loadingInfo.textContent = 'Загрузка translation_ru.tsv...';
+            const mainRows = await loadFile('../translation_ru.tsv');
+            
+            loadingInfo.textContent = 'Загрузка _cn_translate/translation_ru.tsv...';
+            const cnRows = await loadFile('../_cn_translate/translation_ru.tsv');
 
-    dom.pageSize.addEventListener('change', () => {
-        state.pageSize = parseInt(dom.pageSize.value, 10) || 100;
-        state.page = 1;
-        renderTable();
-    });
+            // Подсчитываем статистику для основного перевода
+            loadingInfo.textContent = 'Обработка данных...';
+            const mainStats = calculateStats(mainRows);
+            updateStats('main', mainStats);
 
-    dom.btnPrevPage.addEventListener('click', () => {
-        if (state.page > 1) {
-            state.page--;
-            renderTable();
+            // Подсчитываем статистику для машинного перевода
+            const cnStats = calculateStats(cnRows);
+            updateStats('cn', cnStats);
+
+            // Находим уникальные строки (есть в CN, но нет в основном)
+            const mainIds = new Set(mainRows.map(r => r.id));
+            const uniqueRows = cnRows.filter(r => !mainIds.has(r.id));
+            const uniqueStats = calculateStats(uniqueRows);
+            updateStats('unique', uniqueStats);
+
+            loadingInfo.textContent = `✅ Данные загружены. Основной: ${mainStats.total.toLocaleString()} строк, Машинный: ${cnStats.total.toLocaleString()} строк, Уникальных: ${uniqueStats.total.toLocaleString()} строк`;
+        } catch (e) {
+            console.error(e);
+            loadingInfo.textContent = `❌ Ошибка: ${e.message}`;
         }
-    });
-    dom.btnNextPage.addEventListener('click', () => {
-        const total = state.filtered.length;
-        const maxPage = total === 0 ? 1 : Math.ceil(total / state.pageSize);
-        if (state.page < maxPage) {
-            state.page++;
-            renderTable();
-        }
+    }
+
+    // Обработчик кнопки обновления
+    document.getElementById('btnRefresh').addEventListener('click', () => {
+        loadAndProcess();
     });
 
-    (async function autoLoadFromRepo() {
-        await loadRepoSide('left', '../translation_en.tsv', dom.leftInfo);
-        await loadRepoSide('right', '../translation_ru.tsv', dom.rightInfo);
-    })();
+    // Автозагрузка при открытии страницы
+    loadAndProcess();
 </script>
 </body>
 </html>
-
 
